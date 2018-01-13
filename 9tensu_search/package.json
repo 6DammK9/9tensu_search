@@ -5,5 +5,8 @@
   "main": "app.js",
   "author": {
     "name": "YuXuZaWa"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^3.6.0"
   }
 }
