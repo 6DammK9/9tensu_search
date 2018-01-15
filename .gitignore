@@ -241,3 +241,4 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /9tensu_search/npm-debug.log.2516048188
+/9tensu_search/dump
