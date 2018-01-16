@@ -33,6 +33,8 @@
     <Compile Include="app.js" />
     <Compile Include="app_modules\9tensu_search.js" />
     <Compile Include="app_modules\app_config.js" />
+    <Compile Include="app_modules\music_tag.js" />
+    <Compile Include="app_modules\rename_dir.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
