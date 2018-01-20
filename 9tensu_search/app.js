@@ -1,62 +1,42 @@
-﻿const {Builder, By, Key, until} = require('selenium-webdriver');
+﻿const fs = require('fs');
 
-var album_name = "枯れない世界と終わる花 オリジナルサウンドトラック";
+var app_config = require("./app_modules/app_config.js");
+var search = require("./app_modules/9tensu_search.js");
+var rename_dir = require("./app_modules/rename_dir.js");
 
-var link = `http://www.9tensu.com/search?q=${album_name}`;
+console.log(`Process start with PID ${process.pid}`);
 
-var driver = new Builder()
-    .forBrowser('chrome')
-    .build();
-
-var ignore_items = ["YouTube", "SoundCloud"];
-var result = {
-    title: null,
-    producer: null,
-    date: null,
-    tracks: []
-};
-
-driver.get(link).then(() => {
-    driver.wait(until.titleContains(`9Tensu: Search results`), 20000, "Waiting for search results...").then(() => {
-        driver.findElements(By.tagName(`a`)).then((arr_w) => {
-            driver.findElement(By.partialLinkText(album_name)).then((w) => {
-                //console.log("Target found!");
-                //w.getText().then(console.log);
-                w.getAttribute(`href`).then((s) => {
-                    if (s) {
-                        driver.get(s).then(() => {
-                            driver.wait(until.titleContains(album_name), 40000, "Waiting for target album page...").then(() => {
-                                driver.findElements(By.tagName(`li`)).then((web_elements) => {
-                                    web_elements.forEach((w) => {
-                                        w.getText().then((s) => {
-                                            if ((s.trim().length > 0) && (ignore_items.indexOf(s) < 0)) {
-                                                if (s.indexOf("Producer : ") >= 0) {
-                                                    result.producer = s.replace("Producer : ", "").trim();
-                                                } else if (s.indexOf("Title : ") >= 0) {
-                                                    result.title = s.replace("Title : ", "").trim();
-                                                } else if (s.indexOf("Release date : ") >= 0) {
-                                                    result.date = s.replace("Release date : ", "").trim();
-                                                } else {
-                                                    result.tracks.push(s);
-                                                }
-                                            }
-                                        });
-                                    });
-                                }).then(() => {
-                                    console.log(JSON.stringify(result, null, 4));
-                                    driver.quit();
-                                });
-                            });
-                        });
-                    } else {
-                        console.log("No link found!");
-                        driver.quit();
-                    }
-                });
-            });
+var p_dump = function (album_map) {
+    return new Promise((t, f) => {
+        fs.writeFile(app_config.result_dump, JSON.stringify(album_map, null, 4), (err) => {
+            if (err) { f(err); }
+            else { t(album_map); }
         });
     });
-}).catch((err) => {
-    console.log(err);
-    driver.quit();
-});
+};
+
+var p_import_from_file = function () {
+    return new Promise((t, f) => {
+        fs.readFile(app_config.result_dump, 'utf8', (err, str) => {
+            if (err) { f(err); }
+            else {
+                try {
+                    t(JSON.parse(str));
+                } catch (e) {
+                    f(e);
+                }
+            }
+        });
+    });
+};
+
+//console.log(p_import_from_file());
+
+search.init().then((album_map) => {
+    //p_import_from_file().then((album_map) => {
+    return p_dump(album_map);
+}).then((album_map) => {
+    return rename_dir.init(album_map);
+}).then(() => {
+    console.log(`Process end.`);
+}).catch(console.log);

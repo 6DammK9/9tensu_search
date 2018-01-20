@@ -7,6 +7,8 @@
     "name": "YuXuZaWa"
   },
   "dependencies": {
+    "async": "^2.6.0",
+    "id3js": "^1.1.3",
     "selenium-webdriver": "^3.6.0"
   }
 }
