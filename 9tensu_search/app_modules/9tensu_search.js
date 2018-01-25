@@ -5,6 +5,7 @@ const path = require('path');
 
 const app_config = require("./app_config.js");
 const get_directories = require("./get_directories.js");
+const rename_dir = require("./rename_dir.js");
 
 var make_search_str = function (n) {
     return n.replace(/[.*+?^${}()|[\]\\]/g, ' ').replace(/\s/g, "+");
@@ -28,7 +29,7 @@ var init = function () {
                 codec: null
             };
             var error = null;
-            var album_name = dir;
+            var album_name = rename_dir.unescape_path(dir);
             var link = `http://www.9tensu.com/search?q=${make_search_str(album_name)}`;
 
             driver.get(link).then(() => {

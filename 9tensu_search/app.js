@@ -4,6 +4,7 @@ const app_config = require("./app_modules/app_config.js");
 const search = require("./app_modules/9tensu_search.js");
 const rename_dir = require("./app_modules/rename_dir.js");
 const search_codec = require("./app_modules/search_codec.js");
+const music_tag = require("./app_modules/music_tag");
 
 console.log(`Process start with PID ${process.pid}`);
 
@@ -31,17 +32,17 @@ var p_import_from_file = function () {
     });
 };
 
-/**
-search.init().then((album_map) => {
-//p_import_from_file().then((album_map) => {
+//search.init().then((album_map) => {
+p_import_from_file().then((album_map) => {
     return p_dump(album_map);
 }).then((album_map) => {
     return search_codec.init(album_map);
+}).then((album_map) => {
+    return p_dump(album_map);
 }).then((album_map) => {
     return rename_dir.init(album_map);
 }).then(() => {
     console.log(`Process end.`);
 }).catch(console.log);
-**/
 
-search_codec.test();
+//search_codec.test();

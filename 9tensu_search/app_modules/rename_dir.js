@@ -33,6 +33,30 @@ var escape_path = function (bad_str) {
     }
 };
 
+var unescape_path = function (bad_str) {
+    //Escape incompatiable character from half width to full width. Should be in utf-8.
+    var m = [
+        [/＼/g, "\\"],
+        [/／/g, "\/"],
+        [/：/g, "\:"],
+        [/＊/g, "\*"],
+        [/？/g, "\?"],
+        [/＂/g, "\""],
+        [/＜/g, "\<"],
+        [/＞/g, "\>"],
+        [/｜/g, "\|"]
+    ];
+    try {
+        m.forEach((a) => {
+            bad_str = bad_str.replace(a[0], a[1]);
+        });
+        return bad_str;
+    } catch (e) {
+        console.log(e); //Should not happen
+        return bad_str;
+    }
+};
+
 var desired_names = function (album_info) {
     var s_f = "";
     var s_c = "";
@@ -59,6 +83,7 @@ var rename_cover = function (folder_name, album_info) {
             else {
                 var found_target = null;
                 files.forEach((c) => {
+                    //TODO: Need a better searching algorithm (A's song(B's cover).mp3?)
                     found_target = found_target ? found_target : path.parse(c).name.toLowerCase().indexOf("cover") >= 0 ? c : found_target;
                 });
                 //console.log([found_target, path.join(app_config.target_dir, folder_name, found_target), path.join(app_config.target_dir, desired_names(album_info).cover) + "." + path.parse(found_target).ext]);
@@ -83,12 +108,17 @@ var rename_folder = function (folder_name, album_info) {
     });
 };
 
+var partial_kv = function (m, t_k) {
+    var a_k = Object.keys(m).filter(k => k.indexOf(t_k) >= 0);
+    return a_k.length > 0 ? m[a_k[0]] : undefined;
+};
+
 var init = function (album_map) {
     return new Promise((t, f) => {
         var folder_arr = get_directories.init(app_config.target_dir);
         var album_info = false;
         async.eachSeries(folder_arr, (folder_name, cb_in) => {
-            album_info = album_map[folder_name];
+            album_info = partial_kv(album_map, unescape_path(folder_name)); //album_map[folder_name];
             if (album_info) {
                 rename_cover(folder_name, album_info).then(() => {
                     return rename_folder(folder_name, album_info);
@@ -107,6 +137,9 @@ var init = function (album_map) {
 };
 
 var exports = module.exports = {
-    init: init
+    init: init,
+    escape_path: escape_path,
+    unescape_path: unescape_path,
+    partial_kv: partial_kv
 };
 
