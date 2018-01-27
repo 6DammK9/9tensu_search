@@ -9,6 +9,7 @@ const path = require("path");
 const app_config = require("./app_config.js");
 const get_directories = require("./get_directories.js");
 const music_tag = require("./music_tag.js");
+const rename_dir = require("./rename_dir.js");
 
 const reconized_audio_format = [".wav", ".mp3", ".flac", ".ogg", ".m4a", ".wma", ".aac", ".mp2", ".mpa", ".mpga", ".mpu", "tiff"];
 //const codec_str_audio_format = ["mp3", "vorbis", "aac", "pcm_s16le", "pcm_s16be", "wmav2"]; //Note: flac is not supported.
@@ -64,7 +65,7 @@ var init = function (old_map) {
         var sample_codec = null;
         var new_map = old_map;
         async.eachSeries(folder_arr, (folder_name, cb_in) => {
-            album_info = old_map[folder_name];
+            album_info = rename_dir.partial_kv(old_map, rename_dir.unescape_path(folder_name));
             if (album_info) {
                 fs.readdir(path.join(app_config.target_dir, folder_name), (err, files) => {
                     if (err) { console.log(err.toString()); return cb_in(); }
@@ -75,35 +76,35 @@ var init = function (old_map) {
                             ffprobe(path.join(app_config.target_dir, folder_name, sample_audio), { path: ffprobeStatic.path }, (err, info) => {
                                 if (err) {
                                     console.log(err);
-                                    new_map[folder_name].codec = path.parse(sample_audio).ext.substring(1);
+                                    new_map[rename_dir.unescape_path(folder_name)].codec = path.parse(sample_audio).ext.substring(1);
                                     return cb_in();
                                 } else {
                                     p_find_bitrate_ffmepg(info).then((codec_str) => {
                                         if (!codec_str) {
-                                            new_map[folder_name].codec = path.parse(sample_audio).ext.substring(1);
+                                            new_map[rename_dir.unescape_path(folder_name)].codec = path.parse(sample_audio).ext.substring(1);
                                             return cb_in();
                                         } else if (codec_str == "VBR") {
                                             music_tag.try_mm2(path.join(app_config.target_dir, folder_name, sample_audio)).then((metadata) => {
-                                                new_map[folder_name].codec = (metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : codec_str;
+                                                new_map[rename_dir.unescape_path(folder_name)].codec = (metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : codec_str;
                                                 return cb_in();
                                             }).catch((e) => {
                                                 console.log(e);
-                                                new_map[folder_name].codec = codec_str;
+                                                new_map[rename_dir.unescape_path(folder_name)].codec = codec_str;
                                                 return cb_in();
                                             });
                                         } else {
-                                            new_map[folder_name].codec = codec_str;
+                                            new_map[rename_dir.unescape_path(folder_name)].codec = codec_str;
                                             return cb_in();
                                         }
                                     }).catch((err) => {
                                         console.log(err);
-                                        new_map[folder_name].codec = path.parse(sample_audio).ext.substring(1);
+                                        new_map[rename_dir.unescape_path(folder_name)].codec = path.parse(sample_audio).ext.substring(1);
                                         return cb_in();
                                     });
                                 }
                             });
                         } else {
-                            new_map[folder_name].codec = null;
+                            new_map[rename_dir.unescape_path(folder_name)].codec = null;
                             return cb_in();
                         }
                     }
