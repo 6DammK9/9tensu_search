@@ -5,7 +5,7 @@ var exports = module.exports = {
     result_dump: "./dump/result.txt",
     ignore_items: ["YouTube", "SoundCloud"],
     search_browser: 'chrome',
-    default_codec_str: "320K"
+    default_codec_str: "IDK"
 };
 
 exports.target_dir = `D:/DammK/Doujin Music/${exports.target_event}/Temp`;

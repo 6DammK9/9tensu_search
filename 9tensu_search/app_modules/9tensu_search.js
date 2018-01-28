@@ -4,10 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const app_config = require("./app_config.js");
-
-var get_directories = function (p) {
-    return fs.readdirSync(p).filter(f => fs.statSync(path.join(p, f)).isDirectory());
-};
+const get_directories = require("./get_directories.js");
+const rename_dir = require("./rename_dir.js");
 
 var make_search_str = function (n) {
     return n.replace(/[.*+?^${}()|[\]\\]/g, ' ').replace(/\s/g, "+");
@@ -22,7 +20,7 @@ var init = function () {
         var album_map = {};
         var http_timeout = 0;
 
-        async.eachSeries(get_directories(app_config.target_dir), (dir, cb_in) => {
+        async.eachSeries(get_directories.init(app_config.target_dir), (dir, cb_in) => {
             var result = {
                 title: null,
                 producer: null,
@@ -31,7 +29,7 @@ var init = function () {
                 codec: null
             };
             var error = null;
-            var album_name = dir;
+            var album_name = rename_dir.unescape_path(dir);
             var link = `http://www.9tensu.com/search?q=${make_search_str(album_name)}`;
 
             driver.get(link).then(() => {
