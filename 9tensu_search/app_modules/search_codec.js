@@ -61,63 +61,65 @@ var p_find_bitrate_ffmepg = function (info) {
 var init = function (old_map) {
     return new Promise((t, f) => {
         var folder_arr = get_directories.init(app_config.target_dir);
-        var album_info = null;
         var sample_audio = null;
         var sample_codec = null;
-        var album_key = null; 
+        var album_key = null;
         var new_map = old_map;
         async.eachSeries(folder_arr, (folder_name, cb_in) => {
-            album_info = path_str.partial_kv(old_map, path_str.unescape_path(folder_name));
-            //Bug test
             album_key = path_str.k_by_partial_k(old_map, path_str.unescape_path(folder_name));
-            if (!new_map[album_key]) {
-                console.log(`Warning: ${album_key} is not in the map.`);
+            if (!album_key) {
+                console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
+                console.log(`Retrying Key ${path_str.escape_path(folder_name)}...`);
+                album_key = path_str.k_by_partial_k(old_map, path_str.escape_path(folder_name, true));
             }
-            if (album_info) {
-                rreaddir(path.join(app_config.target_dir, folder_name), (err, files) => {
-                    if (err) { console.log(err.toString()); return cb_in(); }
-                    else {
-                        files = files.filter(file => IsAudioFile(path.parse(file).ext));
-                        sample_audio = files.length > 0 ? files[0] : null;
-                        if (sample_audio) {
-                            ffprobe(sample_audio, { path: ffprobeStatic.path }, (err, info) => {
-                                if (err) {
+            if (!album_key) {
+                console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
+                return cb_in();
+            } else if (!new_map[album_key]) {
+                console.log(`Warning: Value ${album_key} is not in the map.`);
+                return cb_in();
+            } else {
+                rreaddir(path.join(app_config.target_dir, folder_name)).then((files) => {
+                    files = files.filter(file => IsAudioFile(path.parse(file).ext));
+                    sample_audio = files.length > 0 ? files[0] : null;
+                    if (sample_audio) {
+                        ffprobe(sample_audio, { path: ffprobeStatic.path }, (err, info) => {
+                            if (err) {
+                                console.log(err);
+                                new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
+                                return cb_in();
+                            } else {
+                                p_find_bitrate_ffmepg(info).then((codec_str) => {
+                                    if (!codec_str) {
+                                        new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
+                                        return cb_in();
+                                    } else if (codec_str == "VBR") {
+                                        music_tag.try_mm2(sample_audio).then((metadata) => {
+                                            new_map[album_key].codec = (metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : codec_str;
+                                            return cb_in();
+                                        }).catch((e) => {
+                                            console.log(e);
+                                            new_map[album_key].codec = codec_str;
+                                            return cb_in();
+                                        });
+                                    } else {
+                                        new_map[album_key].codec = codec_str;
+                                        return cb_in();
+                                    }
+                                }).catch((err) => {
                                     console.log(err);
                                     new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
                                     return cb_in();
-                                } else {
-                                    p_find_bitrate_ffmepg(info).then((codec_str) => {
-                                        if (!codec_str) {
-                                            new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
-                                            return cb_in();
-                                        } else if (codec_str == "VBR") {
-                                            music_tag.try_mm2(sample_audio).then((metadata) => {
-                                                new_map[album_key].codec = (metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : codec_str;
-                                                return cb_in();
-                                            }).catch((e) => {
-                                                console.log(e);
-                                                new_map[album_key].codec = codec_str;
-                                                return cb_in();
-                                            });
-                                        } else {
-                                            new_map[album_key].codec = codec_str;
-                                            return cb_in();
-                                        }
-                                    }).catch((err) => {
-                                        console.log(err);
-                                        new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
-                                        return cb_in();
-                                    });
-                                }
-                            });
-                        } else {
-                            new_map[album_key].codec = null;
-                            return cb_in();
-                        }
+                                });
+                            }
+                        });
+                    } else {
+                        new_map[album_key].codec = null;
+                        return cb_in();
                     }
+                }).catch((err) => {
+                    console.log(err.toString()); return cb_in();
                 });
-            } else {
-                return cb_in();
             }
         }, (err) => {
             if (err) { f(err); }

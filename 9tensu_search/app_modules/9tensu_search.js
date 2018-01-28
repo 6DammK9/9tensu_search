@@ -51,6 +51,13 @@ var init = function () {
                     return cb_in();
                 } else {
                     driver.findElements(By.tagName(`a`)).then((arr_w) => {
+                        //TODO: Need to try both escaped and unescaped album_name
+                        return driver.findElement(By.partialLinkText(album_name));
+                    }).catch((e) => {
+                        //Special catch 
+                        //console.log(e);
+                        album_name = path_str.escape_path(album_name, true);
+                        console.log(`retrying escaped album_name ${album_name}`);
                         return driver.findElement(By.partialLinkText(album_name));
                     }).then((w) => {
                         //console.log("Target found!"); 

@@ -13,7 +13,7 @@
         [/\|/g, "｜"]
     ];
     if (escape_numbers) {
-        m.concat([
+        m = m.concat([
             [/0/g, "０"],
             [/1/g, "１"],
             [/2/g, "２"],
@@ -26,6 +26,8 @@
             [/9/g, "９"]
         ]);
     };
+
+    //console.log(m);
 
     try {
         m.forEach((a) => {
