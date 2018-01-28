@@ -1,11 +1,11 @@
 //Note: mm2 is the winner. I need xing tag parser, which gives out the codec profile (although not accurate through different LAME versions)
 //Note: will not include other libraries in packet.json. Unless I want to edit tags by script. Foobar2000 is still confortable for me.
 
-const id3 = require("id3js");
-const nodeID3v2 = require('node-id3v2.4');
+//const id3 = require("id3js");
+//const nodeID3v2 = require('node-id3v2.4');
 //const id3r = require("node-id3-reader");
-const fs = require('fs');
-const mm = require('musicmetadata');
+//const fs = require('fs');
+//const mm = require('musicmetadata');
 var mm2 = require('music-metadata');
 
 var try_id3 = function (target, cb) {

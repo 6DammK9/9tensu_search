@@ -12,6 +12,7 @@
     "ffprobe-static": "^2.0.0",
     "fs-extra": "^5.0.0",
     "music-metadata": "^0.8.8",
+    "recursive-readdir": "^2.2.1",
     "selenium-webdriver": "^3.6.0"
   }
 }

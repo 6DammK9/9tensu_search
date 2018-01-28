@@ -35,6 +35,7 @@
     <Compile Include="app_modules\app_config.js" />
     <Compile Include="app_modules\get_directories.js" />
     <Compile Include="app_modules\music_tag.js" />
+    <Compile Include="app_modules\path_str.js" />
     <Compile Include="app_modules\rename_dir.js" />
     <Compile Include="app_modules\search_codec.js" />
     <Content Include="package.json" />
@@ -44,9 +45,11 @@
     <Folder Include="app_modules\" />
     <Folder Include="typings\" />
     <Folder Include="typings\globals\" />
+    <Folder Include="typings\globals\async\" />
     <Folder Include="typings\globals\node\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="typings\globals\async\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>

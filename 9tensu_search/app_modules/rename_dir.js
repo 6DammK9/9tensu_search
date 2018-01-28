@@ -1,60 +1,16 @@
 ﻿const fs = require("fs-extra");
 const path = require("path");
 const async = require("async");
+const rreaddir = require("recursive-readdir");
 
 const app_config = require("./app_config.js");
 const get_directories = require("./get_directories.js");
+const path_str = require("./path_str.js");
+
+const image_ext = ["jpg", "jpeg", "png", "gif"];
 
 var get_year = function (str) {
     return new Date(str).getFullYear();
-};
-
-var escape_path = function (bad_str) {
-    //Escape incompatiable character from half width to full width. Should be in utf-8.
-    var m = [
-        [/\\/g, "＼"],
-        [/\//g, "／"],
-        [/\:/g, "："],
-        [/\*/g, "＊"],
-        [/\?/g, "？"],
-        [/\"/g, "＂"],
-        [/\</g, "＜"],
-        [/\>/g, "＞"],
-        [/\|/g, "｜"]
-    ];
-    try {
-        m.forEach((a) => {
-            bad_str = bad_str.replace(a[0], a[1]);
-        });
-        return bad_str;
-    } catch (e) {
-        console.log(e); //Should not happen
-        return bad_str;
-    }
-};
-
-var unescape_path = function (bad_str) {
-    //Escape incompatiable character from half width to full width. Should be in utf-8.
-    var m = [
-        [/＼/g, "\\"],
-        [/／/g, "\/"],
-        [/：/g, "\:"],
-        [/＊/g, "\*"],
-        [/？/g, "\?"],
-        [/＂/g, "\""],
-        [/＜/g, "\<"],
-        [/＞/g, "\>"],
-        [/｜/g, "\|"]
-    ];
-    try {
-        m.forEach((a) => {
-            bad_str = bad_str.replace(a[0], a[1]);
-        });
-        return bad_str;
-    } catch (e) {
-        console.log(e); //Should not happen
-        return bad_str;
-    }
 };
 
 var desired_names = function (album_info) {
@@ -73,23 +29,26 @@ var desired_names = function (album_info) {
     s_c += b ? `[${b}] ` : "";
     s_c += c ? `${c}` : "";
 
-    return { folder: escape_path(s_f), cover: escape_path(s_c) };
+    return { folder: path_str.escape_path(s_f, false), cover: path_str.escape_path(s_c, false) };
+};
+
+var isCoverFile = function (c) {
+    return ((path.parse(c).name.toLowerCase().indexOf("cover") >= 0) && (image_ext.indexOf(path.parse(c).ext.replace(".", "").toLowerCase()) >= 0));
 };
 
 var rename_cover = function (folder_name, album_info) {
     return new Promise((t, f) => {
-        fs.readdir(path.join(app_config.target_dir, folder_name), (err, files) => {
+        rreaddir(path.join(app_config.target_dir, folder_name), (err, files) => {
             if (err) { f(err); }
             else {
                 var found_target = null;
                 files.forEach((c) => {
-                    //TODO: Need a better searching algorithm (A's song(B's cover).mp3?)
-                    found_target = found_target ? found_target : path.parse(c).name.toLowerCase().indexOf("cover") >= 0 ? c : found_target;
+                    found_target = found_target ? found_target : isCoverFile(c) ? c : found_target;
                 });
                 //console.log([found_target, path.join(app_config.target_dir, folder_name, found_target), path.join(app_config.target_dir, desired_names(album_info).cover) + "." + path.parse(found_target).ext]);
                 if (found_target) {
                     //Added in node v8.5 but I'm using v6.9
-                    fs.copy(path.join(app_config.target_dir, folder_name, found_target), path.join(app_config.target_dir, desired_names(album_info).cover) + path.parse(found_target).ext, (err) => {
+                    fs.copy(found_target, path.join(app_config.target_dir, desired_names(album_info).cover) + path.parse(found_target).ext, (err) => {
                         if (err) { f(err); }
                         else { t(); }
                     });
@@ -108,17 +67,13 @@ var rename_folder = function (folder_name, album_info) {
     });
 };
 
-var partial_kv = function (m, t_k) {
-    var a_k = Object.keys(m).filter(k => k.indexOf(t_k) >= 0);
-    return a_k.length > 0 ? m[a_k[0]] : undefined;
-};
 
 var init = function (album_map) {
     return new Promise((t, f) => {
         var folder_arr = get_directories.init(app_config.target_dir);
         var album_info = false;
         async.eachSeries(folder_arr, (folder_name, cb_in) => {
-            album_info = partial_kv(album_map, unescape_path(folder_name)); //album_map[folder_name];
+            album_info = path_str.partial_kv(album_map, path_str.unescape_path(folder_name)); //album_map[folder_name];
             if (album_info) {
                 rename_cover(folder_name, album_info).then(() => {
                     return rename_folder(folder_name, album_info);
@@ -137,9 +92,6 @@ var init = function (album_map) {
 };
 
 var exports = module.exports = {
-    init: init,
-    escape_path: escape_path,
-    unescape_path: unescape_path,
-    partial_kv: partial_kv
+    init: init
 };
 
