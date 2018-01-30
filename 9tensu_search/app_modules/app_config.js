@@ -8,4 +8,4 @@ var exports = module.exports = {
     default_codec_str: "IDK"
 };
 
-exports.target_dir = `G:/DammK/Doujin Music/${exports.target_event}/Temp`;
+exports.target_dir = `E:/DammK/Doujin Music/${exports.target_event}/Temp`;
