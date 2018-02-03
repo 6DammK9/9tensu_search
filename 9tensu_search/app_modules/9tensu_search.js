@@ -8,7 +8,7 @@ const get_directories = require("./get_directories.js");
 const path_str = require("./path_str.js");
 
 var make_search_str = function (n) {
-    return n.replace(/[.*+?^${}()|[\]\\]/g, ' ').replace(/\s/g, "+");
+    return n.replace(/\+/g, "%2B").replace(/[-.*+?^${}()|[\]\\\&]/g, ' ').replace(/\s/g, "+");
 }
 
 //No throw. Keep progress.

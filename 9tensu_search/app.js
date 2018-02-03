@@ -32,8 +32,8 @@ var p_import_from_file = function () {
     });
 };
 
-//search.init().then((album_map) => {
-p_import_from_file().then((album_map) => {
+search.init().then((album_map) => {
+//p_import_from_file().then((album_map) => {
     return p_dump(album_map);
 }).then((album_map) => {
     return search_codec.init(album_map);
