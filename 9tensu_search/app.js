@@ -6,6 +6,7 @@ const rename_dir = require("./app_modules/rename_dir.js");
 const search_codec = require("./app_modules/search_codec.js");
 const music_tag = require("./app_modules/music_tag");
 const doujinstyle_scan = require("./app_modules/doujinstyle_scan.js");
+const dl_bot = require("./app_modules/dl_bot.js");
 
 var p_dump = function (f_path, obj) {
     return new Promise((t, f) => {
@@ -67,6 +68,10 @@ var before_dl = function () {
 };
 
 console.log(`Process start with PID ${process.pid}`);
-before_dl();
+//before_dl();
 //after_dl();
 //search_codec.test();
+
+dl_bot.init().then(() => {
+    console.log(`Please manually terminate this window to stop the bots. I don't know all the exact file names of the links.`);
+}).catch(console.log);
