@@ -8,7 +8,8 @@ var exports = module.exports = {
     default_codec_str: "IDK", //Should be handled by search_codec.
     doujinstyle_target: "http://www.doujinstyle.com/forum/viewtopic.php?id=16646",
     link_dump_hit: "./dump/hit.txt",
-    link_dump_miss: "./dump/miss.txt"
+    link_dump_miss: "./dump/miss.txt",
+    link_dump_pending: "./dump/pending.txt"
 };
 
-exports.target_dir = `E:/DammK/Doujin Music/${exports.target_event}/Temp`;
+exports.target_dir = `G:/DammK/Doujin Music/${exports.target_event}/Temp`;

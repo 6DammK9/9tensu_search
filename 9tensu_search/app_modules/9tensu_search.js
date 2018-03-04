@@ -20,6 +20,14 @@ var init = function () {
         var album_map = {};
         var http_timeout = 0;
 
+        //TODO: Rewrite into pure ES7
+        //links_arr.reduce((p, target_link) => {
+        //    return p.then(() => { return access_single_link(driver_map, http_timeout_map, target_link); });
+        //}, Promise.resolve()).then(() => {
+        //    return Promise.all(driver_map.map(driver => get_download_status(driver)));
+        //});
+
+
         async.eachSeries(get_directories.init(app_config.target_dir), (dir, cb_in) => {
             var result = {
                 title: null,

@@ -67,11 +67,14 @@ var before_dl = function () {
     }).catch(console.log);
 };
 
+var time_to_dl = function () {
+    dl_bot.init().then(() => {
+        console.log(`Please manually terminate this window to stop the bots. I don't know all the exact file names of the links.`);
+    }).catch(console.log);
+};
+
 console.log(`Process start with PID ${process.pid}`);
 //before_dl();
+time_to_dl();
 //after_dl();
 //search_codec.test();
-
-dl_bot.init().then(() => {
-    console.log(`Please manually terminate this window to stop the bots. I don't know all the exact file names of the links.`);
-}).catch(console.log);
