@@ -18,7 +18,7 @@ const codec_str_audio_format = ["mp3"];
 const mp3_cbr = [8000, 16000, 24000, 32000, 40000, 48000, 64000, 80000, 96000, 112000, 128000, 160000, 192000, 224000, 256000, 320000];
 
 var IsAudioFile = function (ext) {
-    return reconized_audio_format.indexOf(ext.toLowerCase()) >= 0;
+    return reconized_audio_format.contains(ext.toLowerCase());
 };
 
 var p_dummy = function () {
@@ -38,14 +38,14 @@ var p_find_bitrate_ffmepg = function (info) {
                 f(new Error("No audio stream info found!"));
             } else {
                 //console.log(target_stream.codec_name);
-                if (codec_str_audio_format.indexOf(target_stream.codec_name) < 0) {
+                if (!codec_str_audio_format.contains(target_stream.codec_name)) {
                     t(null);
                 } else {
                     bitrate = parseInt(target_stream.bit_rate);
                     if (isNaN(bitrate)) {
                         f(new Error("Invalid bitrate!"));
                     } else {
-                        if (mp3_cbr.indexOf(bitrate) >= 0) {
+                        if (mp3_cbr.contains(bitrate)) {
                             t(Math.round(bitrate / 1000) + "K");
                         } else {
                             t("VBR"); //This may need to search for music tag...

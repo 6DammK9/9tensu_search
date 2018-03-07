@@ -50,7 +50,7 @@ var init = function () {
             }).then((w) => {
                 return w.getText();
             }).then((s) => {
-                if (s.indexOf("Your keyword does not match any of entries.") >= 0) {
+                if (s.contains("Your keyword does not match any of entries.")) {
                     error = {
                         error: "Search fail!",
                         title: album_name
@@ -83,12 +83,12 @@ var init = function () {
                             }).then((web_elements) => {
                                 web_elements.forEach((w) => {
                                     w.getText().then((s) => {
-                                        if ((s.trim().length > 0) && (app_config.ignore_items.indexOf(s) < 0)) {
-                                            if (s.indexOf("Producer : ") >= 0) {
+                                        if ((s.trim().length > 0) && (!app_config.ignore_items.contains(s))) {
+                                            if (s.contains("Producer : ")) {
                                                 result.producer = s.replace("Producer : ", "").trim();
-                                            } else if (s.indexOf("Title : ") >= 0) {
+                                            } else if (s.contains("Title : ")) {
                                                 result.title = s.replace("Title : ", "").trim();
-                                            } else if (s.indexOf("Release date : ") >= 0) {
+                                            } else if (s.contains("Release date : ")) {
                                                 result.date = s.replace("Release date : ", "").trim();
                                             } else {
                                                 result.tracks.push(s);

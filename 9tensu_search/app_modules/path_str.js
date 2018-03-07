@@ -75,13 +75,13 @@ var unescape_path = function (bad_str) {
 };
 
 var partial_kv = function (m, t_k) {
-    var a_k = Object.keys(m).filter(k => k.indexOf(t_k) >= 0);
+    var a_k = Object.keys(m).filter(k => k.contains(t_k));
     return a_k.length > 0 ? m[a_k[0]] : undefined;
 };
 
 
 var k_by_partial_k = function (m, t_k) {
-    var a_k = Object.keys(m).filter(k => k.indexOf(t_k) >= 0);
+    var a_k = Object.keys(m).filter(k => k.contains(t_k));
     return a_k.length > 0 ? a_k[0] : undefined;
 };
 

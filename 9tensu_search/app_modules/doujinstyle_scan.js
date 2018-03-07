@@ -29,7 +29,7 @@ var get_page_count = function (arr_w) {
 
 var match_pattern = function (s, a_p) {
     try {
-        return (s && a_p) ? a_p.indexOf(url.parse(s).host) >= 0 : false;
+        return (s && a_p) ? a_p.contains(url.parse(s).host) : false;
     } catch (e) {
         console.log(e);
         return false;

@@ -14,7 +14,7 @@ const supported_dl_sites = ["www.mediafire.com/file/", "yadi.sk/d/", "drive.goog
 
 var inverted_indexOf = function (a, s) {
     for (var i = 0; i < a.length; i++) {
-        if (s.indexOf(a[i]) >= 0) { return i; }
+        if (s.includes(a[i])) { return i; }
     }
     return -1;
 };
