@@ -1,7 +1,8 @@
 ﻿const fs = require('fs');
 
 const app_config = require("./app_modules/app_config.js");
-const search = require("./app_modules/9tensu_search.js");
+const tensu_search = require("./app_modules/9tensu_search.js");
+const tensu_explore = require("./app_modules/9tensu_explore.js");
 const rename_dir = require("./app_modules/rename_dir.js");
 const search_codec = require("./app_modules/search_codec.js");
 const music_tag = require("./app_modules/music_tag");
@@ -42,7 +43,7 @@ var p_import_from_file = function (f_path) {
 };
 
 var after_dl = function () {
-    search.init().then((album_map) => {
+    tensu_search.init().then((album_map) => {
         //p_import_from_file(app_config.search_result_dump).then((album_map) => {
         return p_dump(app_config.search_result_dump, album_map);
     }).then((album_map) => {
@@ -57,6 +58,12 @@ var after_dl = function () {
 };
 
 var before_dl = function () {
+
+    tensu_explore.init().then(() => {
+        console.log(`Process end.`);
+    }).catch(console.log);
+
+    /**
     doujinstyle_scan.init().then((links_map) => {
         return Promise.all([
             export_arr_to_plain_text(app_config.link_dump_hit, links_map ? links_map.hit.sort() : []),
@@ -65,6 +72,7 @@ var before_dl = function () {
     }).then(() => {
         console.log(`Process end.`);
     }).catch(console.log);
+    **/
 };
 
 var time_to_dl = function () {
@@ -74,7 +82,7 @@ var time_to_dl = function () {
 };
 
 console.log(`Process start with PID ${process.pid}`);
-//before_dl();
-time_to_dl();
+before_dl();
+//time_to_dl();
 //after_dl();
 //search_codec.test();

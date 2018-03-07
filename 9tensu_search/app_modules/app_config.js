@@ -12,4 +12,4 @@ var exports = module.exports = {
     link_dump_pending: "./dump/pending.txt"
 };
 
-exports.target_dir = `G:/DammK/Doujin Music/${exports.target_event}/Temp`;
+exports.target_dir = `E:/DammK/Doujin Music/${exports.target_event}/Temp`;
