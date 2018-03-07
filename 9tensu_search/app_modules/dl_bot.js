@@ -12,7 +12,7 @@ const app_config = require("./app_config.js");
 
 const target_file = app_config.link_dump_hit;
 
-const supported_dl_sites = ["www.mediafire.com/file", "yadi.sk/d"];
+const supported_dl_sites = ["www.mediafire.com/file", "yadi.sk/d/zzzzz"];
 
 var inverted_indexOf = function (a, s) {
     for (var i = 0; i < a.length; i++) {

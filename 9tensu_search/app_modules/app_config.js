@@ -1,7 +1,6 @@
 var exports = module.exports = {
     target_event: "C91", //Applies here only
     http_timeout_extend: 20000, //20 sec
-    expected_loading_time: 5000, //5 sec
     search_result_dump: "./dump/result.txt",
     ignore_items: ["YouTube", "SoundCloud"],
     search_browser: 'chrome',
@@ -12,3 +11,6 @@ var exports = module.exports = {
 };
 
 exports.target_dir = `E:/DammK/Doujin Music/${exports.target_event}/Temp`;
+exports.expected_loading_time = function () {
+    return Math.round(Math.random() * 250) + 5000; //5 sec
+}; 
