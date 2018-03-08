@@ -157,6 +157,7 @@ var init = async function () {
     var driver_map = [];
     var http_timeout_map = [];
 
+    //Driver.setDownloadPath(path) is possible. Rewrite if this option fails.
     supported_dl_sites.forEach((sites) => {
         driver_map.push(new Builder()
             .forBrowser(app_config.search_browser)
