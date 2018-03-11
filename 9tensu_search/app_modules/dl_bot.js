@@ -86,7 +86,7 @@ var find_in_mediafire = async function (driver, http_timeout, target_link) {
             var dl_a = await dl_div[0].findElements(By.tagName(`a`));
             var dl_s = await dl_a[0].getAttribute(`href`);
             console.log(`Found actual link: ${dl_s}`);
-            driver.executeScript(`window.open('${dl_s}','_blank');`); //await driver.get(dl_s);
+            await driver.executeScript(`window.open('${dl_s}','_blank');`); //await driver.get(dl_s);
             //await dl_div.click();
             await driver.sleep(app_config.expected_loading_time);
             //driver.quit();

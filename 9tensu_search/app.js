@@ -59,7 +59,9 @@ var after_dl = function () {
 
 var before_dl = function () {
 
-    tensu_explore.init().then(() => {
+    tensu_explore.init().then((dl_links) => {
+        return export_arr_to_plain_text(app_config.link_dump_wait, dl_links);
+    }).then(() => {
         console.log(`Process end.`);
     }).catch(console.log);
 

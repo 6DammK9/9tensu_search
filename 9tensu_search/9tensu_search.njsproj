@@ -33,6 +33,7 @@
     <Compile Include="app.js" />
     <Compile Include="app_modules\9tensu_explore.js" />
     <Compile Include="app_modules\9tensu_search.js" />
+    <Compile Include="app_modules\ad_fly_skipper.js" />
     <Compile Include="app_modules\app_config.js" />
     <Compile Include="app_modules\dl_bot.js" />
     <Compile Include="app_modules\doujinstyle_scan.js" />

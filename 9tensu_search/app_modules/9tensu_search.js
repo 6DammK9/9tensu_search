@@ -50,7 +50,7 @@ var init = function () {
             }).then((w) => {
                 return w.getText();
             }).then((s) => {
-                if (s.contains("Your keyword does not match any of entries.")) {
+                if (s.includes("Your keyword does not match any of entries.")) {
                     error = {
                         error: "Search fail!",
                         title: album_name
@@ -58,7 +58,7 @@ var init = function () {
                     console.log(error);
                     return cb_in();
                 } else {
-                    driver.findElements(By.tagName(`a`)).then((arr_w) => {
+                    driver.findElements(By.css(`a`)).then((arr_w) => {
                         //TODO: Need to try both escaped and unescaped album_name
                         return driver.findElement(By.partialLinkText(album_name));
                     }).catch((e) => {
@@ -79,16 +79,16 @@ var init = function () {
                             }).then(() => {
                                 return driver.sleep(app_config.expected_loading_time);
                             }).then(() => {
-                                return driver.findElements(By.tagName(`li`));
+                                return driver.findElements(By.css(`li`));
                             }).then((web_elements) => {
                                 web_elements.forEach((w) => {
                                     w.getText().then((s) => {
-                                        if ((s.trim().length > 0) && (!app_config.ignore_items.contains(s))) {
-                                            if (s.contains("Producer : ")) {
+                                        if ((s.trim().length > 0) && (!app_config.ignore_items.includes(s))) {
+                                            if (s.includes("Producer : ")) {
                                                 result.producer = s.replace("Producer : ", "").trim();
-                                            } else if (s.contains("Title : ")) {
+                                            } else if (s.includes("Title : ")) {
                                                 result.title = s.replace("Title : ", "").trim();
-                                            } else if (s.contains("Release date : ")) {
+                                            } else if (s.includes("Release date : ")) {
                                                 result.date = s.replace("Release date : ", "").trim();
                                             } else {
                                                 result.tracks.push(s);

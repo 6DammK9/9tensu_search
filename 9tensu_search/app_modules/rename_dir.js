@@ -33,7 +33,7 @@ var desired_names = function (album_info) {
 };
 
 var isCoverFile = function (c) {
-    return ((path.parse(c).name.toLowerCase().contains("cover")) && (image_ext.contains(path.parse(c).ext.replace(".", "").toLowerCase())));
+    return ((path.parse(c).name.toLowerCase().includes("cover")) && (image_ext.includes(path.parse(c).ext.replace(".", "").toLowerCase())));
 };
 
 var rename_cover = function (folder_name, album_info) {

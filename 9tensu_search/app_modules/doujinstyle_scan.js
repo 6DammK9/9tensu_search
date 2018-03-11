@@ -9,9 +9,6 @@ const url = require('url'); //Using Legacy URL API for NodeJS 6 LTS
 
 const app_config = require("./app_config.js");
 
-const DL_SITES = ["mega.nz", "vk.com", "www.mediafire.com", "yadi.sk", "drive.google.com", "puu.sh", "leme.me", "docs.google.com"];
-const OTHER_SITES = ["soundcloud.com", "bandicamp.com"];
-
 var get_page_count = function (arr_w) {
     return new Promise((a, b) => {
         var found_pages = 1;
@@ -29,7 +26,7 @@ var get_page_count = function (arr_w) {
 
 var match_pattern = function (s, a_p) {
     try {
-        return (s && a_p) ? a_p.contains(url.parse(s).host) : false;
+        return (s && a_p) ? a_p.includes(url.parse(s).host) : false;
     } catch (e) {
         console.log(e);
         return false;
@@ -44,7 +41,7 @@ var get_href_from_a = function (arr_w) {
         };
         async.eachSeries(arr_w, (w, cb_w) => {
             w.getAttribute(`href`).then((s) => {
-                if (match_pattern(s, DL_SITES)) {
+                if (match_pattern(s, app_config.DL_SITES)) {
                     result.hit.push(s);
                 } else {
                     result.miss.push(s);
