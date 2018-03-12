@@ -3,6 +3,8 @@ const {
     } = require('selenium-webdriver');
 const fs = require('fs');
 const path = require('path');
+const url = require("url");
+const chrome = require('selenium-webdriver/chrome');
 
 const app_config = require("./app_config.js");
 const get_directories = require("./get_directories.js");
@@ -186,22 +188,80 @@ var get_all_album_info_and_link = async function (driver, album_map) {
 };
 
 var get_dl_links = function (album_map) {
-    var dl_links = [];
+    var dl_links_hit = [];
+    var dl_links_miss = [];
     Object.values(album_map).forEach((album_info) => {
-        if (album_info.dl_links) {
-            dl_links = dl_links.concat(album_info.dl_links);
-        } else {
-            console.log("Error: No dl_links found!");
+        if (album_info.dl_links_hit) {
+            dl_links_hit = dl_links_hit.concat(album_info.dl_links_hit);
+        }
+        if (album_info.dl_links_miss) {
+            dl_links_miss = dl_links_miss.concat(album_info.dl_links_miss);
         }
     });
-    return dl_links.sort();
+    dl_links_hit = dl_links_hit.sort();
+    dl_links_miss = dl_links_miss.sort();
+    return { dl_links_hit, dl_links_miss };
 };
 
 var try_bypass_adfly = async function (driver, album_map) {
-    ad_fly_skipper.called_by_9tensu_explore(driver, album_map, app_config.DL_SITES).then((new_map) => {
-        console.log("then");
-        return new_map;
-    });
+    //ad_fly_skipper.called_by_9tensu_explore(driver, album_map, app_config.DL_SITES).then((new_map) => {
+    //    console.log("then");
+    //    return new_map;
+    //});
+
+    var called_by_9tensu_explore = async function (driver, album_map, dl_sites) {
+        var kv_arr = Object.entries(album_map);
+
+        var split_dl_links = async function (kv_pair) {
+            let original_arr = kv_pair[1].dl_links;
+            let hit_arr = [];
+            let miss_arr = [];
+
+            let match_pattern = function (s, a_p) {
+                try {
+                    return (s && a_p) ? a_p.includes(url.parse(s).host) : false;
+                } catch (e) {
+                    console.log(e);
+                    return false;
+                }
+            };
+
+            let p_fnc = function (original_link) {
+                return new Promise((t, f) => {
+                    ad_fly_skipper.wrapped_by_selenium(driver, original_link).then((modified_link) => {
+                        //console.log(modified_link);
+                        if (match_pattern(modified_link, dl_sites)) {
+                            hit_arr.push(modified_link);
+                        } else {
+                            miss_arr.push(modified_link);
+                        }
+                        t();
+                    }).catch((e) => {
+                        console.log(e);
+                        f();
+                    });
+                });
+            };
+
+            try {
+                await original_arr.reduce((p, original_link) => {
+                    return p.then(() => { return p_fnc(original_link); });
+                }, Promise.resolve());
+            } catch (e) {
+                console.log(e);
+            }
+
+            album_map[kv_pair[0]].dl_links_hit = hit_arr;
+            album_map[kv_pair[0]].dl_links_miss = miss_arr;
+        };
+
+        await kv_arr.reduce((p, kv_pair) => {
+            return p.then(() => { return split_dl_links(kv_pair); });
+        }, Promise.resolve());
+        return album_map;
+    };
+
+    return await called_by_9tensu_explore(driver, album_map, app_config.DL_SITES);
 };
 
 //No throw. Keep progress.
@@ -209,31 +269,37 @@ var init = async function () {
 
     var driver = new Builder()
         .forBrowser(app_config.search_browser)
+        .setChromeOptions(new chrome.Options()
+            .addExtensions(app_config.AD_FLY_BYPASS)
+            .setUserPreferences({ 'download.default_directory': app_config.target_dir }))
         .build();
 
     try {
-        //var page_count = await get_page_count(driver);
-        //console.log(`page_count = ${page_count}`);
-        //var album_map_stage1 = await get_all_album_index(driver, page_count);
-        //await p_dump_writejson(app_config.explore_result_dump, album_map_stage1);
+        var page_count = await get_page_count(driver);
+        console.log(`page_count = ${page_count}`);
+        page_count = 1;
+        var album_map_stage1 = await get_all_album_index(driver, page_count);
+        await p_dump_writejson(app_config.explore_result_dump, album_map_stage1);
 
-        //var album_map_stage1 = await p_dump_readjson(app_config.explore_result_dump);
+        var album_map_stage1 = await p_dump_readjson(app_config.explore_result_dump);
 
-        //console.log(`album_count = ${Object.keys(album_map_stage1).length}`);
-        //var album_map_stage2 = await get_all_album_info_and_link(driver, album_map_stage1);
-        //await p_dump_writejson(app_config.explore_result_dump, album_map_stage2);
+        console.log(`album_count = ${Object.keys(album_map_stage1).length}`);
+        var album_map_stage2 = await get_all_album_info_and_link(driver, album_map_stage1);
+        await p_dump_writejson(app_config.explore_result_dump, album_map_stage2);
 
-        var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
-        console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
+        //var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
+        //console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
 
         var album_map_stage3 = await try_bypass_adfly(driver, album_map_stage2);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage3);
-        
+
         console.log(`driver.quit()`);
         driver.quit();
 
-        var dl_links_stage3 = get_dl_links(album_map_stage3);
-        return dl_links_stage3;
+        //return album_map_stage3;
+        var dl_links_map = get_dl_links(album_map_stage3);
+        
+        return dl_links_map;
     } catch (e) {
         console.log(e);
         driver.quit();

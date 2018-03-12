@@ -59,8 +59,12 @@ var after_dl = function () {
 
 var before_dl = function () {
 
-    tensu_explore.init().then((dl_links) => {
-        return export_arr_to_plain_text(app_config.link_dump_wait, dl_links);
+    tensu_explore.init().then((links_map) => {
+        return Promise.all([
+            export_arr_to_plain_text(app_config.link_dump_wait_hit, links_map ? links_map.dl_links_hit.sort() : []),
+            export_arr_to_plain_text(app_config.link_dump_wait_miss, links_map ? links_map.dl_links_miss.sort() : [])
+        ]);
+        //return export_arr_to_plain_text(app_config.link_dump_wait, dl_links);
     }).then(() => {
         console.log(`Process end.`);
     }).catch(console.log);
