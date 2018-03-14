@@ -1,73 +1,3 @@
-//Respect this guy - he just saved my life.
-//https://github.com/StoreClerk/AdF.ly-Skipper
-//Credit: StoreClerk/AdF.ly-Skipper
-//Source: https://github.com/StoreClerk/AdF.ly-Skipper/blob/master/AdF.ly%20Skipper/js/script.js
-
-//The only challenge is I need to wrap it into another string again.
-var wrapped_by_str = [
-    `
-// AdF.ly skipper script
-(function () { 
-var code = `, `
-Object.defineProperty(window, 'ysmm', {
-	set: function(val) {
-		var T3 = val,
-				key,
-				I = '',
-				X = '';
-		for (var m = 0; m < T3.length; m++) {
-			if (m % 2 == 0) {
-				I += T3.charAt(m);
-			} else {
-				X = T3.charAt(m) + X;
-			}
-		}
-		T3 = I + X;
-		var U = T3.split('');
-		for (var m = 0; m < U.length; m++) {
-			if (!isNaN(U[m])) {
-				for (var R = m + 1; R < U.length; R++) {
-					if (!isNaN(U[R])) {
-						var S = U[m]^U[R];
-						if (S < 10) {
-							U[m] = S;
-						}
-						m = R;
-						R = U.length;
-					}
-				}
-			}
-		}
-		T3 = U.join('');
-		T3 = window.atob(T3);
-		T3 = T3.substring(T3.length - (T3.length - 16));
-		T3 = T3.substring(0, T3.length - 16);
-		key = T3;
-		if (key && (key.indexOf('http://') === 0 || key.indexOf("https://") === 0)) {
-			document.write('<!--');
-			window.stop();
-			window.onbeforeunload = null;
-			window.location = key;
-		}
-	}
-});
-`, `;
-
-// Only use the script for HTML webpages
-if (document instanceof HTMLDocument) {
-    console.log("a");
-
-
-    // Insert the AdF.ly skipper script
-    var script = document.createElement('script');
-    script.textContent = code;
-    document.documentElement.appendChild(script);
-}
-console.log("b");
-
-})();
-`].join("");
-
 const {
         Builder, By, Key, until
     } = require('selenium-webdriver');
@@ -78,11 +8,14 @@ var wrapped_by_selenium = async function (driver, link) {
 
     //console.log(`wrapped_by_selenium(${link})`);
 
+    //Assumption: Bypass plugin has been installed. Note that selenium only execute scripts when html body is loaded.
+    //Seems only browser plugins can execute scripts before that.
     await driver.get(link);
-    //await driver.executeAsyncScript(wrapped_by_str); //await driver.get(dl_s);
     await driver.wait(until.elementLocated(By.css(`body`)), http_timeout, "Timeout: Waiting for adfly page");
     await driver.sleep(app_config.expected_loading_time_short);
+    //This is to counter adfly locked page before the typical 5-second waiting.
     var div_warning = driver.findElements(By.id(`warning-container`));
+
     if (div_warning) {
         await driver.sleep(app_config.AD_FLY_TIMEOUT);
         await driver.get(link);
@@ -91,6 +24,7 @@ var wrapped_by_selenium = async function (driver, link) {
         await driver.sleep(app_config.expected_loading_time_short);
     }
 
+    //This is to counter adfly redirect locking page. 
     var p_arr = await driver.findElements(By.css(`p`));
     var answer = null;
 
@@ -120,6 +54,5 @@ var wrapped_by_selenium = async function (driver, link) {
 };
 
 var exports = module.exports = {
-    wrapped_by_str: wrapped_by_str,
     wrapped_by_selenium: wrapped_by_selenium
 };

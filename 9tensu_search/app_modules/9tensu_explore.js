@@ -264,6 +264,19 @@ var try_bypass_adfly = async function (driver, album_map) {
     return await called_by_9tensu_explore(driver, album_map, app_config.DL_SITES);
 };
 
+var fix_MORE_AD_BYPASS = async function (driver) {
+    await driver.get(app_config.MORE_AD_BYPASS.html);
+    await driver.wait(until.elementLocated(By.id(`adfly`)), app_config.http_timeout_extend, "Timeout: Waiting for plugin setting page.");
+    await driver.sleep(1000);
+    //Cannot trigger it from UI. Execute script instead.
+    await driver.executeScript(`
+        chrome.extension.getBackgroundPage().enabled_sites.adfly = false; 
+        chrome.extension.getBackgroundPage().save_sites();
+        adfly.checked = chrome.extension.getBackgroundPage().enabled_sites.adfly;
+    `);
+    await driver.sleep(1000);
+};
+
 //No throw. Keep progress.
 var init = async function () {
 
@@ -271,25 +284,33 @@ var init = async function () {
         .forBrowser(app_config.search_browser)
         .setChromeOptions(new chrome.Options()
             .addExtensions(app_config.AD_FLY_BYPASS)
-            .setUserPreferences({ 'download.default_directory': app_config.target_dir }))
+            .addExtensions(app_config.MORE_AD_BYPASS.crx)
+            .addExtensions(app_config.AD_BLOCK)
+            .setUserPreferences({
+                'download.default_directory': app_config.target_dir
+                //'download.prompt_for_download': false
+            }))
         .build();
 
     try {
+        await fix_MORE_AD_BYPASS(driver);
+        /**
+         * 
         var page_count = await get_page_count(driver);
         console.log(`page_count = ${page_count}`);
         page_count = 1;
         var album_map_stage1 = await get_all_album_index(driver, page_count);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage1);
-
+        
         var album_map_stage1 = await p_dump_readjson(app_config.explore_result_dump);
 
         console.log(`album_count = ${Object.keys(album_map_stage1).length}`);
         var album_map_stage2 = await get_all_album_info_and_link(driver, album_map_stage1);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage2);
-
-        //var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
-        //console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
-
+        */
+        var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
+        console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
+        
         var album_map_stage3 = await try_bypass_adfly(driver, album_map_stage2);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage3);
 
@@ -298,8 +319,9 @@ var init = async function () {
 
         //return album_map_stage3;
         var dl_links_map = get_dl_links(album_map_stage3);
-        
+
         return dl_links_map;
+
     } catch (e) {
         console.log(e);
         driver.quit();

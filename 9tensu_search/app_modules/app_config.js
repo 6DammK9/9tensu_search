@@ -17,7 +17,13 @@ var exports = module.exports = {
     explore_result_dump: "./dump/explore_result.txt",
     DL_SITES: ["mega.nz", "vk.com", "www.mediafire.com", "yadi.sk", "drive.google.com", "puu.sh", "leme.me", "docs.google.com"],
     AD_FLY_BYPASS: "./app_modules/AdSkipper_v4.1.3.crx",
-    AD_FLY_TIMEOUT: 7000
+    AD_FLY_TIMEOUT: 7000,
+    MORE_AD_BYPASS: {
+        crx: "./app_modules/Ads_Link_Skiper_1_3_19_0.crx",
+        html: "chrome-extension://bkpeohkfimdfogdnpcnokjkbpankkmil/popup/popup.html"
+    },
+    AD_BLOCK: "./app_modules/AdBlock_3_27_0_0.crx"
+
 };
 
 exports.target_dir = `E:/DammK/Doujin Music/${exports.target_event}/Temp`;
