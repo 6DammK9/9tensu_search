@@ -1,12 +1,11 @@
 "use strict";
-const {
-    Builder, By, Key, until
-} = require('selenium-webdriver');
+const { By, until } = require('selenium-webdriver');
 const fs = require('fs');
 const path = require('path');
 const url = require('url'); //Using Legacy URL API for NodeJS 6 LTS
 
 const app_config = require("./app_config.js");
+const webdriver_builder = require("./webdriver_builder.js");
 
 var get_page_count = async function (arr_w) {
     var found_pages = 1;
@@ -94,15 +93,18 @@ var search_link_for_all_pages = async function (driver, target_link, http_timeou
     };
 
     var fill_result = async function (c_url) {
-        var f = c_url === target_link ? driver.sleep(0) : driver.get(c_url); //Prevent wating time
         var cur_page = a_url.indexOf(url) + 1;
-        await f;
+        if (c_url === target_link) {
+            await driver.sleep(0);
+        } else {
+            await driver.get(c_url); //Prevent wating time
+        }
         http_timeout += app_config.http_timeout_extend;
         await driver.wait(until.titleContains(`DoujinStyle.com`), http_timeout, `Timeout: Waiting for page ${cur_page} of the thread`);
         await driver.sleep(app_config.expected_loading_time);
         var div_f = await driver.findElement(By.id(`forum16`));
         var arr_post = await div_f.findElements(By.className(`post`));
-        var sub_result = await search_links_for_each_post(arr_w);
+        var sub_result = await search_links_for_each_post(arr_post);
         result.hit = result.hit.concat(sub_result.hit);
         result.miss = result.miss.concat(sub_result.miss);
     };
@@ -116,9 +118,7 @@ var search_link_for_all_pages = async function (driver, target_link, http_timeou
 
 //No throw. Keep progress.
 var init = async function () {
-    var driver = new Builder()
-        .forBrowser(app_config.search_browser)
-        .build();
+    var driver = webdriver_builder.init();
     var http_timeout = 0;
     var target_link = app_config.doujinstyle_target;
     await driver.get(target_link)
@@ -128,7 +128,8 @@ var init = async function () {
     var div_pagepost = await driver.findElement(By.id(`brd-pagepost-top`));
     var div_paging = await div_pagepost.findElement(By.className(`paging`));
     var w_pages = await div_paging.findElements(By.css(`*`));
-    var page_count = await get_page_count(arr_w);
+    var page_count = await get_page_count(w_pages);
+    console.log(`page_count = ${page_count}`);
     var result = null;
     try {
         result = await search_link_for_all_pages(driver, target_link, http_timeout, page_count);

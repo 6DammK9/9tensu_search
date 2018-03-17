@@ -1,11 +1,12 @@
 "use strict";
-const { Builder, By, Key, until } = require('selenium-webdriver');
+const { By, until } = require('selenium-webdriver');
 const fs = require('fs');
 const path = require('path');
 
 const app_config = require("./app_config.js");
 const get_directories = require("./get_directories.js");
 const path_str = require("./path_str.js");
+const webdriver_builder = require("./webdriver_builder.js");
 
 var make_search_str = function (n) {
     return n.replace(/\+/g, "%2B").replace(/[-.*+?^${}()|[\]\\\&]/g, ' ').replace(/\s/g, "+");
@@ -14,9 +15,7 @@ var make_search_str = function (n) {
 //No throw. Keep progress.
 var init = async function () {
     //return new Promise((a, b) => {
-    var driver = new Builder()
-        .forBrowser(app_config.search_browser)
-        .build();
+    var driver = webdriver_builder.init();
     var album_map = {};
     var http_timeout = 0;
 

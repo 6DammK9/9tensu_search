@@ -43,6 +43,7 @@
     <Compile Include="app_modules\rename_dir.js" />
     <Compile Include="app_modules\search_codec.js" />
     <Compile Include="app_modules\slack_bot.js" />
+    <Compile Include="app_modules\webdriver_builder.js" />
     <Content Include="app_modules\AdBlock_3_27_0_0.crx" />
     <Content Include="app_modules\AdSkipper_v4.1.3.crx" />
     <Content Include="app_modules\Ads_Link_Skiper_1_3_19_0.crx" />

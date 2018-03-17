@@ -1,11 +1,10 @@
 "use strict";
-const {
-    Builder, By, Key, until
-} = require('selenium-webdriver');
+const { By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const fs = require('fs');
 
 const app_config = require("./app_config.js");
+const webdriver_builder = require("./webdriver_builder.js");
 
 const target_file = app_config.link_dump_hit;
 
@@ -158,11 +157,7 @@ var init = async function () {
 
     //Driver.setDownloadPath(path) is possible. Rewrite if this option fails.
     supported_dl_sites.forEach((sites) => {
-        driver_map.push(new Builder()
-            .forBrowser(app_config.search_browser)
-            .setChromeOptions(new chrome.Options()
-                .setUserPreferences({ 'download.default_directory': app_config.target_dir }))
-            .build());
+        driver_map.push(webdriver_builder.init());
         http_timeout_map.push(app_config.http_timeout_extend * links_arr.length * 1.5);
     });
 

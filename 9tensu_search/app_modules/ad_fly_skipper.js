@@ -1,7 +1,5 @@
 "use strict";
-const {
-        Builder, By, Key, until
-    } = require('selenium-webdriver');
+const { By, until } = require('selenium-webdriver');
 const app_config = require("./app_config.js");
 
 var wrapped_by_selenium = async function (driver, link) {

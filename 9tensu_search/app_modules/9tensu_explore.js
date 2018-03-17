@@ -1,7 +1,5 @@
 "use strict";
-const {
-        Builder, By, Key, until
-    } = require('selenium-webdriver');
+const { By, until } = require('selenium-webdriver');
 const fs = require('fs');
 const path = require('path');
 const url = require("url");
@@ -10,7 +8,8 @@ const chrome = require('selenium-webdriver/chrome');
 const app_config = require("./app_config.js");
 const get_directories = require("./get_directories.js");
 const path_str = require("./path_str.js");
-var ad_fly_skipper = require("./ad_fly_skipper.js");
+const webdriver_builder = require("./webdriver_builder.js");
+const ad_fly_skipper = require("./ad_fly_skipper.js");
 
 var make_search_str = function (n) {
     return n.replace(/\+/g, "%2B").replace(/[-.*+?^${}()|[\]\\\&]/g, ' ').replace(/\s/g, "+");
@@ -281,17 +280,7 @@ var fix_MORE_AD_BYPASS = async function (driver) {
 //No throw. Keep progress.
 var init = async function () {
 
-    var driver = new Builder()
-        .forBrowser(app_config.search_browser)
-        .setChromeOptions(new chrome.Options()
-            .addExtensions(app_config.AD_FLY_BYPASS)
-            .addExtensions(app_config.MORE_AD_BYPASS.crx)
-            .addExtensions(app_config.AD_BLOCK)
-            .setUserPreferences({
-                'download.default_directory': app_config.target_dir
-                //'download.prompt_for_download': false
-            }))
-        .build();
+    var driver = webdriver_builder.init();
 
     try {
         await fix_MORE_AD_BYPASS(driver);
