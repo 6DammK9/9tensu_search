@@ -1,4 +1,6 @@
-﻿const fs = require("fs-extra");
+﻿"use strict";
+
+const fs = require("fs-extra");
 const path = require("path");
 const async = require("async");
 const rreaddir = require("recursive-readdir");
@@ -68,38 +70,37 @@ var rename_folder = function (folder_name, album_info) {
 };
 
 
-var init = function (album_map) {
-    return new Promise((t, f) => {
-        var folder_arr = get_directories.init(app_config.target_dir);
-        var album_info = null;
-        var album_key = null;
-        async.eachSeries(folder_arr, (folder_name, cb_in) => {
-            album_key = path_str.k_by_partial_k(album_map, path_str.unescape_path(folder_name));
-            if (!album_key) {
-                console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
-                console.log(`Retrying Key ${path_str.escape_path(folder_name)}...`);
-                album_key = path_str.k_by_partial_k(album_map, path_str.escape_path(folder_name, true));
+var init = async function (album_map) {
+    //return new Promise((t, f) => {
+    var folder_arr = get_directories.init(app_config.target_dir);
+    var album_info = null;
+    var album_key = null;
+
+    var p_rename = async function (folder_name) {
+        album_key = path_str.k_by_partial_k(album_map, path_str.unescape_path(folder_name));
+        if (!album_key) {
+            console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
+            console.log(`Retrying Key ${path_str.escape_path(folder_name)}...`);
+            album_key = path_str.k_by_partial_k(album_map, path_str.escape_path(folder_name, true));
+        }
+        if (!album_key) {
+            console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
+        } else if (!album_map[album_key]) {
+            console.log(`Warning: Value ${album_key} is not in the map.`);
+        } else {
+            album_info = album_map[album_key];
+            try {
+                await rename_cover(folder_name, album_info);
+                await rename_folder(folder_name, album_info);
+            } catch(err) {
+                console.log(err.toString());
             }
-            if (!album_key) {
-                console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
-                return cb_in();
-            } else if (!album_map[album_key]) {
-                console.log(`Warning: Value ${album_key} is not in the map.`);
-                return cb_in();
-            } else {
-                album_info = album_map[album_key];
-                rename_cover(folder_name, album_info).then(() => {
-                    return rename_folder(folder_name, album_info);
-                }).then(cb_in).catch((err) => {
-                    console.log(err.toString());
-                    cb_in();
-                });
-            }
-        }, (err) => {
-            if (err) { f(err); }
-            else { t(); }
-        });
-    });
+        }
+    }
+
+    await folder_arr.reduce((p, folder_name) => {
+        return p.then(() => { return p_rename(folder_name); });
+    }, Promise.resolve());
 };
 
 var exports = module.exports = {

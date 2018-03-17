@@ -242,3 +242,4 @@ ModelManifest.xml
 .fake/
 /9tensu_search/npm-debug.log.2516048188
 /9tensu_search/dump
+/9tensu_search/node_modules_backup

@@ -1,4 +1,6 @@
-﻿var escape_path = function (bad_str, escape_numbers) {
+﻿"use strict";
+
+var escape_path = function (bad_str, escape_numbers) {
     //Escape incompatiable character from half width to full width. Should be in utf-8.
     //Somehow 9tensu escape numbers also. Strange.
     var m = [

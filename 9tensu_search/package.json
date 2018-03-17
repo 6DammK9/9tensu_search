@@ -4,15 +4,15 @@
   "description": "9tensu_search",
   "main": "app.js",
   "author": {
-    "name": "YuXuZaWa"
+    "name": "DammK YuXuZaWa"
   },
   "dependencies": {
-    "async": "^2.6.0",
     "ffprobe": "^1.1.0",
     "ffprobe-static": "^2.0.0",
     "fs-extra": "^5.0.0",
     "music-metadata": "^0.8.8",
     "recursive-readdir": "^2.2.1",
+    "request": "^2.85.0",
     "selenium-webdriver": "^3.6.0"
   }
 }

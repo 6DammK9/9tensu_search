@@ -1,6 +1,6 @@
+"use strict";
 //Guessing MP3 codec profile from bitrate: https://trac.ffmpeg.org/wiki/Encode/MP3
 
-const async = require("async");
 const ffprobe = require("ffprobe");
 const ffprobeStatic = require("ffprobe-static");
 const fs = require("fs");
@@ -25,7 +25,7 @@ var p_dummy = function () {
     return new Promise((t, f) => { t(); });
 };
 
-var p_find_bitrate_ffmepg = function (info) {
+var p_find_bitrate_ffmepg = async function (info) {
     return new Promise((t, f) => {
         var target_stream = null;
         var bitrate = null;
@@ -58,117 +58,110 @@ var p_find_bitrate_ffmepg = function (info) {
     });
 };
 
-var init = function (old_map) {
+var p_ffprobe = async function (sample_audio) {
     return new Promise((t, f) => {
-        var folder_arr = get_directories.init(app_config.target_dir);
-        var sample_audio = null;
-        var sample_codec = null;
-        var album_key = null;
-        var new_map = old_map;
-        async.eachSeries(folder_arr, (folder_name, cb_in) => {
-            album_key = path_str.k_by_partial_k(old_map, path_str.unescape_path(folder_name));
-            if (!album_key) {
-                console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
-                console.log(`Retrying Key ${path_str.escape_path(folder_name)}...`);
-                album_key = path_str.k_by_partial_k(old_map, path_str.escape_path(folder_name, true));
-            }
-            if (!album_key) {
-                console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
-                return cb_in();
-            } else if (!new_map[album_key]) {
-                console.log(`Warning: Value ${album_key} is not in the map.`);
-                return cb_in();
-            } else {
-                rreaddir(path.join(app_config.target_dir, folder_name)).then((files) => {
-                    files = files.filter(file => IsAudioFile(path.parse(file).ext));
-                    sample_audio = files.length > 0 ? files[0] : null;
-                    if (sample_audio) {
-                        ffprobe(sample_audio, { path: ffprobeStatic.path }, (err, info) => {
-                            if (err) {
-                                console.log(err);
-                                new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
-                                return cb_in();
-                            } else {
-                                p_find_bitrate_ffmepg(info).then((codec_str) => {
-                                    if (!codec_str) {
-                                        new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
-                                        return cb_in();
-                                    } else if (codec_str == "VBR") {
-                                        music_tag.try_mm2(sample_audio).then((metadata) => {
-                                            new_map[album_key].codec = (metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : codec_str;
-                                            return cb_in();
-                                        }).catch((e) => {
-                                            console.log(e);
-                                            new_map[album_key].codec = codec_str;
-                                            return cb_in();
-                                        });
-                                    } else {
-                                        new_map[album_key].codec = codec_str;
-                                        return cb_in();
-                                    }
-                                }).catch((err) => {
-                                    console.log(err);
-                                    new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
-                                    return cb_in();
-                                });
-                            }
-                        });
-                    } else {
-                        new_map[album_key].codec = null;
-                        return cb_in();
-                    }
-                }).catch((err) => {
-                    console.log(err.toString()); return cb_in();
-                });
-            }
-        }, (err) => {
-            if (err) { f(err); }
-            else { t(new_map); }
+        ffprobe(sample_audio, { path: ffprobeStatic.path }, (err, info) => {
+            t({ err, info });
         });
     });
 };
 
-var test = function () {
+var init = async function (old_map) {
+    var folder_arr = get_directories.init(app_config.target_dir);
+    var sample_audio = null;
+    var sample_codec = null;
+    var album_key = null;
+    var new_map = old_map;
+
+    var p_update_map = async function (folder_name) {
+        album_key = path_str.k_by_partial_k(old_map, path_str.unescape_path(folder_name));
+        if (!album_key) {
+            console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
+            console.log(`Retrying Key ${path_str.escape_path(folder_name)}...`);
+            album_key = path_str.k_by_partial_k(old_map, path_str.escape_path(folder_name, true));
+        }
+        if (!album_key) {
+            console.log(`Warning: Key ${path_str.unescape_path(folder_name)} is not in the map.`);
+        } else if (!new_map[album_key]) {
+            console.log(`Warning: Value ${album_key} is not in the map.`);
+        } else {
+            var files = await rreaddir(path.join(app_config.target_dir, folder_name));
+            files = files.filter(file => IsAudioFile(path.parse(file).ext));
+            sample_audio = files.length > 0 ? files[0] : null;
+            if (sample_audio) {
+                var ffprobe_result = await p_ffprobe(sample_audio);
+                if (ffprobe_result.err) {
+                    console.log(ffprobe_result.err);
+                    new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
+                } else {
+                    var codec_str = null;
+                    var metadata = null;
+                    try {
+                        codec_str = await p_find_bitrate_ffmepg(ffprobe_result.info);
+                        if (!codec_str) {
+                            new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
+                        } else if (codec_str == "VBR") {
+                            try {
+                                metadata = await music_tag.try_mm2(sample_audio);
+                                new_map[album_key].codec = (metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : codec_str;
+                            } catch (e_mm2) {
+                                console.log(e_mm2);
+                                new_map[album_key].codec = codec_str;
+                            }
+                        } else {
+                            new_map[album_key].codec = codec_str;
+                        }
+                    } catch (e_p) {
+                        console.log(e_p);
+                        new_map[album_key].codec = path.parse(sample_audio).ext.substring(1);
+                    }
+                }
+            } else {
+                new_map[album_key].codec = null;
+            }
+        }
+    };
+
+    await folder_arr.reduce((p, folder_name) => {
+        return p.then(() => { return p_update_map(folder_name); });
+    }, Promise.resolve());
+
+    return new_map;
+};
+
+var test = async function () {
     var files = [
         "./dump/test.mp3",
-        "./dump/test.ogg",
-        "./dump/test.mp4",
-        "./dump/testV0.mp3",
+        //"./dump/test.ogg",
+        //"./dump/test.mp4",
+        //"./dump/testV0.mp3",
         "./dump/test.flac",
-        "./dump/test.wav",
+        //"./dump/test.wav",
         "./dump/test.wma",
-        "./dump/test2.wav",
+        //"./dump/test2.wav",
         "./dump/testV4.mp3"
     ];
-    async.each(files, (file, cb_in) => {
-        ffprobe(file, { path: ffprobeStatic.path }, (err, info) => {
-            if (err) { console.log(err); cb_in(); } else {
-                p_find_bitrate_ffmepg(info).then((codec_str) => {
-                    if (!codec_str) {
-                        console.log(path.parse(file).ext.substring(1));
-                        cb_in();
-                    } else if (codec_str == "VBR") {
-                        music_tag.try_mm2(file).then((metadata) => {
-                            console.log((metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : "VBR");
-                            cb_in();
-                        }).catch((e) => {
-                            console.log(e);
-                            cb_in();
-                        });
-                    } else {
-                        console.log(codec_str);
-                        cb_in();
-                    }
-                }).catch((e) => {
-                    console.log(e);
-                    cb_in();
-                });
+
+    var p_ffprobe = async function (file) {
+        var ffprobe_result = await p_ffprobe(file);
+        if (ffprobe_result.err) { throw err; } else {
+            var codec_str = await p_find_bitrate_ffmepg(ffprobe_result.info);
+            if (!codec_str) {
+                console.log(path.parse(file).ext.substring(1));
+            } else if (codec_str == "VBR") {
+                var metadata = await music_tag.try_mm2(file);
+                console.log((metadata && metadata.format && metadata.format.codecProfile) ? metadata.format.codecProfile : "VBR");
+            } else {
+                console.log(codec_str);
             }
-            //console.log(err ? err : JSON.stringify(info, null, 4)); cb_in();
-        });
-    }, (err) => {
-        console.log("Test end: " + err);
-    });
+        }
+        //console.log(err ? err : JSON.stringify(ffprobe_result.info, null, 4));
+    };
+
+    //async.eachSeries
+    await files.reduce((p, file) => {
+        return p.then(() => { return p_ffprobe(file); });
+    }, Promise.resolve());
 };
 
 var exports = module.exports = {

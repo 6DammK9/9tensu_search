@@ -1,5 +1,4 @@
 "use strict";
-const async = require("async");
 const {
     Builder, By, Key, until
 } = require('selenium-webdriver');
@@ -119,7 +118,7 @@ var find_in_google_docs = async function (driver, http_timeout, target_link) {
         var dl_div = await driver.findElements(By.id(`uc-download-link`));
         var dl_title = await driver.getTitle();
         if (!(dl_div && dl_div.length > 0)) {
-            console.log("Seems it has been started. Dumping File name to seperate files."); 
+            console.log("Seems it has been started. Dumping File name to seperate files.");
             //Actually it has no title. Kept for potential use.
             await p_dump_append(app_config.link_dump_pending, dl_title + "\r\n");
         } else {

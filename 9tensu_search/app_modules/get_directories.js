@@ -1,4 +1,6 @@
-﻿//Credit: pravdomil and Mikal Madsen
+﻿"use strict";
+
+//Credit: pravdomil and Mikal Madsen
 //Source: https://stackoverflow.com/questions/18112204/get-all-directories-within-directory-nodejs
 
 const fs = require('fs');

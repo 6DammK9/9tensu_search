@@ -1,3 +1,4 @@
+"use strict";
 var exports = module.exports = {
     target_event: "C92", //Applies here only
     http_timeout_extend: 20000, //20 sec
@@ -22,8 +23,8 @@ var exports = module.exports = {
         crx: "./app_modules/Ads_Link_Skiper_1_3_19_0.crx",
         html: "chrome-extension://bkpeohkfimdfogdnpcnokjkbpankkmil/popup/popup.html"
     },
-    AD_BLOCK: "./app_modules/AdBlock_3_27_0_0.crx"
-
+    AD_BLOCK: "./app_modules/AdBlock_3_27_0_0.crx",
+    SLACK_WEB_HOOK: "https://hooks.slack.com/services/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"
 };
 
-exports.target_dir = `E:/DammK/Doujin Music/${exports.target_event}/Temp`;
+exports.target_dir = `F:/DammK/Doujin Music/${exports.target_event}/Temp`;

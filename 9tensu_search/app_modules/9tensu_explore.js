@@ -1,3 +1,4 @@
+"use strict";
 const {
         Builder, By, Key, until
     } = require('selenium-webdriver');
@@ -310,7 +311,7 @@ var init = async function () {
         */
         var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
         console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
-        
+
         var album_map_stage3 = await try_bypass_adfly(driver, album_map_stage2);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage3);
 
