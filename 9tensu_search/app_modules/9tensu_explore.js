@@ -128,7 +128,7 @@ var get_all_album_info_and_link = async function (driver, album_map) {
     let get_album_info_and_link = async function (kv_pair) {
         let get_li_content = async function (li_item) {
             var s = await li_item.getText();
-            album_map[kv_pair[0]].tracks = [];
+            if (!album_map[kv_pair[0]].tracks) { album_map[kv_pair[0]].tracks = []; }
 
             if ((s.trim().length > 0) && (!app_config.ignore_items.includes(s))) {
                 if (s.includes("Producer : ")) {
@@ -145,8 +145,8 @@ var get_all_album_info_and_link = async function (driver, album_map) {
 
         let get_a_content = async function (dl_link) {
             var s = await dl_link.getAttribute(`href`);
-            album_map[kv_pair[0]].dl_links = [];
-            if ((s.trim().length > 0) && (!app_config.ignore_items.includes(s))) {
+            if (!album_map[kv_pair[0]].dl_links) { album_map[kv_pair[0]].dl_links = []; }
+            if (s && (s.trim().length > 0) && (!app_config.ignore_items.includes(s))) {
                 album_map[kv_pair[0]].dl_links.push(s);
             }
         };
@@ -154,11 +154,12 @@ var get_all_album_info_and_link = async function (driver, album_map) {
         //console.log(`get_album_info_and_link(${kv_pair[0]})`);
         if (!kv_pair[1].link) { console.log("Warning: link is not found in the info entry!"); return; }
         await driver.get(kv_pair[1].link);
-        await driver.wait(until.titleContains(kv_pair[0]), http_timeout, "Timeout: Waiting for album page");
+        await driver.wait(until.titleContains("9Tensu"), http_timeout, "Timeout: Waiting for album page");
+        //await driver.wait(until.titleContains(kv_pair[0]), http_timeout, "Timeout: Waiting for album page");
         await driver.sleep(app_config.expected_loading_time);
         var li_arr = await driver.findElements(By.css(`li`));
-        var dl_div = await driver.findElement(By.id(`Download-bar`));
-        var dl_links = await dl_div.findElements(By.css(`a`));
+        var dl_div = await driver.findElements(By.id(`Download-bar`));
+        var dl_links = (dl_div && dl_div.length > 0) ? await dl_div[0].findElements(By.css(`a`)) : null;
 
         //var div_content = await driver.findElement(By.id(`widget-content-HTML4`));
         //var div_items = await div_content.findElements(By.className(`item-content`));
@@ -284,11 +285,12 @@ var init = async function () {
 
     try {
         await fix_MORE_AD_BYPASS(driver);
-        /**
-         * 
+         
         var page_count = await get_page_count(driver);
         console.log(`page_count = ${page_count}`);
-        page_count = 1;
+
+        //var page_count = 1;
+
         var album_map_stage1 = await get_all_album_index(driver, page_count);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage1);
         
@@ -297,9 +299,9 @@ var init = async function () {
         console.log(`album_count = ${Object.keys(album_map_stage1).length}`);
         var album_map_stage2 = await get_all_album_info_and_link(driver, album_map_stage1);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage2);
-        */
-        var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
-        console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
+        
+        //var album_map_stage2 = await p_dump_readjson(app_config.explore_result_dump);
+        //console.log(`album_count = ${Object.keys(album_map_stage2).length}`);
 
         var album_map_stage3 = await try_bypass_adfly(driver, album_map_stage2);
         await p_dump_writejson(app_config.explore_result_dump, album_map_stage3);
@@ -314,7 +316,7 @@ var init = async function () {
 
     } catch (e) {
         console.log(e);
-        driver.quit();
+        //driver.quit();
     }
 
 };

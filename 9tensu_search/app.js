@@ -115,12 +115,18 @@ var time_to_dl = async function () {
     return await dl_bot.init();
 };
 
+var print_help = function () {
+    console.log(`Avaliable command: [node] [./app.js] [-scan [--9tensu] [--doujinstyle]] [-download] [-rename [--search] [--inherit]]`);
+    console.log(`Note: [-download] won't return!`);
+};
+
 var init = async function () {
     try {
         console.log(`Process start with PID ${process.pid}`);
         await p_mkdirp(app_config.target_dir);
-        await p_mkdirp("./dump");
+        await p_mkdirp(`./dump/${app_config.target_event}`);
 
+        if (process.argv.includes("-help")) print_help();
         if (process.argv.includes("-scan")) await before_dl();
         if (process.argv.includes("-download")) await time_to_dl();
         if (process.argv.includes("-rename")) await after_dl();
