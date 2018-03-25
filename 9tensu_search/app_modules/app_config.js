@@ -1,6 +1,6 @@
 "use strict";
 var exports = module.exports = {
-    target_event: "C91", //Applies here only
+    target_event: "C92", //Applies here only
     http_timeout_extend: 20000, //20 sec
     expected_loading_time: 5000, //5 sec
     expected_loading_time_short: 2000, //2 sec
@@ -27,4 +27,5 @@ exports.link_dump_wait = `./dump/${exports.target_event}/link_dump_wait.txt`;
 exports.link_dump_wait_hit = `./dump/${exports.target_event}/link_dump_wait_hit.txt`;
 exports.link_dump_wait_miss = `./dump/${exports.target_event}/link_dump_wait_miss.txt`;
 exports.explore_result_dump = `./dump/${exports.target_event}/explore_result.json`;
-exports.target_dir = `F:/DammK/Doujin Music/${exports.target_event}/Temp`;
+//exports.target_dir = `F:/DammK/Doujin Music/${exports.target_event}/Temp`;
+exports.target_dir = `D:/PINKAMENA/MEGA/C92`;

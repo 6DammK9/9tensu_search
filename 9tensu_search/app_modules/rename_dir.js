@@ -15,12 +15,13 @@ var get_year = function (str) {
     return new Date(str).getFullYear();
 };
 
-var desired_names = function (album_info) {
+var desired_names = function (album_info, album_key) {
     var s_f = "";
     var s_c = "";
     var a = app_config.target_event ? app_config.target_event : album_info.date ? get_year(album_info.date) : false;
     var b = album_info.producer;
-    var c = album_info.title;
+    if (!album_info.title) { console.log(`Warning: Using album_key ${album_key} as title...`); }
+    var c = album_info.title ? album_info.title : album_key;
     var d = album_info.codec ? album_info.codec : app_config.default_codec_str ? app_config.default_codec_str : false;
 
     s_f += a ? `(${a}) ` : "";
@@ -38,7 +39,7 @@ var isCoverFile = function (c) {
     return ((path.parse(c).name.toLowerCase().includes("cover")) && (image_ext.includes(path.parse(c).ext.replace(".", "").toLowerCase())));
 };
 
-var rename_cover = function (folder_name, album_info) {
+var rename_cover = function (folder_name, album_info, album_key) {
     return new Promise((t, f) => {
         rreaddir(path.join(app_config.target_dir, folder_name), (err, files) => {
             if (err) { f(err); }
@@ -50,7 +51,7 @@ var rename_cover = function (folder_name, album_info) {
                 //console.log([found_target, path.join(app_config.target_dir, folder_name, found_target), path.join(app_config.target_dir, desired_names(album_info).cover) + "." + path.parse(found_target).ext]);
                 if (found_target) {
                     //Added in node v8.5 but I'm using v6.9
-                    fs.copy(found_target, path.join(app_config.target_dir, desired_names(album_info).cover) + path.parse(found_target).ext, (err) => {
+                    fs.copy(found_target, path.join(app_config.target_dir, desired_names(album_info, album_key).cover) + path.parse(found_target).ext, (err) => {
                         if (err) { f(err); }
                         else { t(); }
                     });
@@ -60,9 +61,9 @@ var rename_cover = function (folder_name, album_info) {
     });
 };
 
-var rename_folder = function (folder_name, album_info) {
+var rename_folder = function (folder_name, album_info, album_key) {
     return new Promise((t, f) => {
-        fs.rename(path.join(app_config.target_dir, folder_name), path.join(app_config.target_dir, desired_names(album_info).folder), (err) => {
+        fs.rename(path.join(app_config.target_dir, folder_name), path.join(app_config.target_dir, desired_names(album_info, album_key).folder), (err) => {
             if (err) { f(err); }
             else { t(); }
         });
@@ -90,8 +91,8 @@ var init = async function (album_map) {
         } else {
             album_info = album_map[album_key];
             try {
-                await rename_cover(folder_name, album_info);
-                await rename_folder(folder_name, album_info);
+                await rename_cover(folder_name, album_info, album_key);
+                await rename_folder(folder_name, album_info, album_key);
             } catch(err) {
                 console.log(err.toString());
             }

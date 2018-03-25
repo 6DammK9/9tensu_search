@@ -180,6 +180,10 @@ var get_all_album_info_and_link = async function (driver, album_map) {
         } else {
             console.log(`Error: no #Download-bar .a found!`);
         }
+
+        if (!album_map[kv_pair[0]].title) {
+            console.log(`Warning: Filling album_key${kv_pair[0]} as title...`);
+        }
     };
 
     await kv_arr.reduce((p, kv_pair) => {
