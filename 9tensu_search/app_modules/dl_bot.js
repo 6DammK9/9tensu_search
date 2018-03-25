@@ -69,6 +69,7 @@ var find_in_mediafire = async function (driver, http_timeout, target_link) {
         await driver.sleep(app_config.expected_loading_time);
 
         var dl_div = null;
+        var dl_auth = null;
         var dl_div = await driver.findElements(By.className(`download_link`));
         //console.log(dl_div);
         if (!(dl_div && dl_div.length > 0)) {
